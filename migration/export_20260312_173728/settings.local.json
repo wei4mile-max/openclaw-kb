@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gemini --version 2>&1 || echo \"NOT FOUND\")",
+      "Bash(npm install:*)",
+      "Bash(npm search:*)",
+      "Bash(gemini --version 2>&1)",
+      "Bash(gemini --help 2>&1)",
+      "Bash(GOOGLE_GENAI_USE_GCA=true gemini -p \"Say hi\" --output-format text 2>&1)",
+      "mcp__claude_ai_Notion__notion-search",
+      "WebSearch",
+      "Bash(gemini -p \"你是一位嚴格的投資分析師，扮演「紅軍」角色，針對以下台積電2025 Q4財報數據，提出批判性質疑、風險警示與潛在隱憂。請用繁體中文，條列5-7點，每點簡潔有力。\n\n台積電2025 Q4財報重點：\n- 合併營收：新台幣1兆460億（YoY +20.5%）\n- 稅後純益：5,057億（YoY +35%）\n- EPS：19.50元\n- 毛利率：62.3%、營業利益率：54.0%\n- 先進製程（7nm以下）佔晶圓銷售77%\n- 3nm佔28%、5nm佔35%\n- 全年營收：新台幣2.9兆，歷史新高\n- AI晶片需求為主要成長動能\n\n請以紅軍立場提出質疑與風險。\" --output-format text 2>&1)",
+      "mcp__claude_ai_Notion__notion-create-pages",
+      "mcp__notion__API-get-self",
+      "mcp__notion__API-post-search",
+      "mcp__notion__API-post-page",
+      "mcp__notion__API-query-data-source",
+      "mcp__notion__API-patch-block-children",
+      "mcp__notion__API-retrieve-a-database",
+      "mcp__notion__API-retrieve-a-page",
+      "mcp__notion__API-get-block-children",
+      "mcp__notion__API-delete-a-block",
+      "mcp__notion__API-patch-page"
+    ]
+  }
+}

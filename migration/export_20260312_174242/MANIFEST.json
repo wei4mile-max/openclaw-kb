@@ -1,0 +1,15 @@
+{
+  "exported_at": "20260312_174242",
+  "source_machine": "LAPTOP-ONCTK3GN",
+  "source_user": "user",
+  "source_home": "/c/Users/user",
+  "source_project_key": "C--Users-user",
+  "claude_code_version": "2.1.74 (Claude Code)",
+  "files": {
+    "memory": "memory/",
+    "commands": "commands/",
+    "settings": "settings.json",
+    "settings_local": "settings.local.json",
+    "mcp_config": "mcp-config.json"
+  }
+}

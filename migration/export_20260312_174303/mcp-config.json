@@ -1,0 +1,15 @@
+{
+  "C:/Users/user": {
+    "notion": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@notionhq/notion-mcp-server"
+      ],
+      "env": {
+        "OPENAPI_MCP_HEADERS": "{\"Authorization\":\"Bearer ntn_V51405102402mWQCA8M0awnIcD0MT5vC43u46WXaCyzfZK\",\"Notion-Version\":\"2022-06-28\"}"
+      }
+    }
+  }
+}

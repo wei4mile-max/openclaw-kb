@@ -1,0 +1,9 @@
+# 暫存檔
+*.tmp
+*.bak
+~$*
+
+# 系統檔
+.DS_Store
+Thumbs.db
+desktop.ini
