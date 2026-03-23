@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMEA vs 美國：人工成本上漲衝擊比較</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --border: #475569;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --red: #f87171;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --orange: #fb923c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 2rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle { color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem; }
+  h2 {
+    font-size: 1.4rem;
+    color: var(--accent);
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--surface2);
+  }
+  h3 { font-size: 1.1rem; color: var(--accent2); margin: 1.5rem 0 0.75rem; }
+
+  /* Conclusion box */
+  .conclusion {
+    background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(129,140,248,0.1));
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .conclusion strong { color: var(--yellow); }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0 1.5rem;
+    font-size: 0.9rem;
+  }
+  th {
+    background: var(--surface2);
+    color: var(--accent);
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  td {
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--surface2);
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(56,189,248,0.05); }
+  .pain-emea { color: var(--red); font-weight: 600; }
+  .pain-us { color: var(--orange); font-weight: 600; }
+  .pain-both { color: var(--yellow); font-weight: 600; }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--surface2);
+    border-radius: 10px;
+    padding: 1.2rem;
+  }
+  .card h4 {
+    color: var(--accent);
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+  }
+  .card ul { padding-left: 1.2rem; }
+  .card li { color: var(--text-muted); margin-bottom: 0.3rem; font-size: 0.88rem; }
+  .card li strong { color: var(--text); }
+
+  /* Cost breakdown */
+  .cost-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .cost-box {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 1.2rem;
+    border-top: 3px solid var(--accent);
+  }
+  .cost-box.emea { border-top-color: var(--accent2); }
+  .cost-box h4 { margin-bottom: 0.8rem; font-size: 1rem; }
+  .cost-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.35rem 0;
+    font-size: 0.88rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .cost-item:last-child { border-bottom: none; }
+  .cost-total {
+    font-weight: 700;
+    color: var(--yellow);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 2px solid var(--surface2);
+  }
+
+  /* Bar chart */
+  .bar-chart { margin: 1.5rem 0; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.6rem;
+    font-size: 0.88rem;
+  }
+  .bar-label { width: 180px; text-align: right; padding-right: 1rem; color: var(--text-muted); }
+  .bar-track { flex: 1; height: 28px; background: var(--surface); border-radius: 6px; position: relative; overflow: hidden; }
+  .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 0 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bg);
+    transition: width 0.8s ease;
+  }
+  .bar-fill.us { background: linear-gradient(90deg, var(--accent), #22d3ee); }
+  .bar-fill.emea { background: linear-gradient(90deg, var(--accent2), #a78bfa); }
+  .bar-fill.east { background: linear-gradient(90deg, var(--orange), var(--yellow)); }
+
+  /* Indicator cards */
+  .indicator-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .indicator {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 1rem;
+    border-left: 3px solid var(--accent);
+  }
+  .indicator.b { border-left-color: var(--green); }
+  .indicator.c { border-left-color: var(--yellow); }
+  .indicator.d { border-left-color: var(--orange); }
+  .indicator h5 { color: var(--text); font-size: 0.9rem; margin-bottom: 0.4rem; }
+  .indicator p { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 0.2rem; }
+  .indicator a { color: var(--accent); text-decoration: none; font-size: 0.82rem; }
+  .indicator a:hover { text-decoration: underline; }
+
+  /* Strategy */
+  .strategy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 1rem 0;
+  }
+  .strategy-box {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 1.2rem;
+  }
+  .strategy-box h4 { margin-bottom: 0.8rem; }
+  .strategy-box ul { padding-left: 1.2rem; }
+  .strategy-box li { margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
+  .strategy-box li strong { color: var(--text); }
+
+  /* Sources */
+  .sources {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    columns: 2;
+    column-gap: 2rem;
+  }
+  .sources a { color: var(--accent); text-decoration: none; display: block; margin-bottom: 0.3rem; }
+  .sources a:hover { text-decoration: underline; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .cost-compare, .strategy-grid { grid-template-columns: 1fr; }
+    .bar-label { width: 120px; font-size: 0.8rem; }
+    .sources { columns: 1; }
+    h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>EMEA vs 美國：人工成本上漲衝擊比較</h1>
+<p class="subtitle">最後更新：2026-03-23 ｜ 公開指標與自主叉車/AMR 銷售策略參考</p>
+
+<!-- ============ 結論 ============ -->
+<div class="conclusion">
+  <strong>EMEA（尤其西歐）的結構性衝擊更大，美國的短期漲幅衝擊更猛。</strong>
+</div>
+
+<table>
+  <thead>
+    <tr><th>維度</th><th>美國</th><th>EMEA（西歐為主）</th><th>誰更痛？</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>倉庫時薪漲幅</td><td>8–9.5%/年（物流業）</td><td>3.3–4.0%/年；東歐 9–12%</td><td class="pain-us">美國短期更猛</td></tr>
+    <tr><td>雇主附加成本</td><td>薪資 +10–20%（另加醫保 $8K–16K/人/年）</td><td>薪資 +20–35%（法國達 +59%）</td><td class="pain-emea">EMEA 結構性更高</td></tr>
+    <tr><td>利潤被壓縮</td><td>物流企業利潤率較高，可吸收</td><td>EBIT &lt;6%，8% 加薪吃掉 2/3 利潤</td><td class="pain-emea">EMEA 更致命</td></tr>
+    <tr><td>勞工短缺</td><td>43 萬倉庫空缺、45% 離職率</td><td>78% 倉庫報告缺工、&gt;12% 空缺率</td><td class="pain-both">兩邊都嚴重</td></tr>
+    <tr><td>法規剛性</td><td>彈性高（at-will 雇傭）</td><td>解雇成本高、假期 20–30 天、works council</td><td class="pain-emea">EMEA 調整更難</td></tr>
+  </tbody>
+</table>
+
+<!-- ============ 薪資 ============ -->
+<h2>一、叉車操作員薪資比較（2025–2026）</h2>
+
+<table>
+  <thead><tr><th>地區</th><th>時薪範圍</th><th>中位數</th><th>數據來源</th></tr></thead>
+  <tbody>
+    <tr><td>美國</td><td>$15–24/hr</td><td>~$19/hr</td><td>PayScale, ZipRecruiter, Glassdoor</td></tr>
+    <tr><td>德國</td><td>€15–23/hr</td><td>~€18–19/hr</td><td>SalaryExpert, Salary.com</td></tr>
+    <tr><td>荷蘭</td><td>€14–18/hr</td><td>~€16/hr</td><td>Europa.jobs</td></tr>
+    <tr><td>東歐（波蘭/匈牙利）</td><td>€6–10/hr</td><td>~€8/hr</td><td>Europa.jobs, Eurostat</td></tr>
+  </tbody>
+</table>
+
+<h3>同一名叉車操作員的「真實」雇主成本</h3>
+<p style="color:var(--text-muted); margin-bottom:1rem; font-size:0.9rem;">表面時薪接近，加上附加成本差距拉大 &darr;</p>
+
+<div class="cost-compare">
+  <div class="cost-box">
+    <h4 style="color:var(--accent)">美國（$19/hr 基礎）</h4>
+    <div class="cost-item"><span>基本時薪</span><span>$19.00</span></div>
+    <div class="cost-item"><span>雇主社保（FICA 7.65%）</span><span>+$1.45</span></div>
+    <div class="cost-item"><span>帶薪假期折算（10 天）</span><span>+$0.73</span></div>
+    <div class="cost-item"><span>醫療保險分攤（~$9K/年）</span><span>+$4.50</span></div>
+    <div class="cost-total cost-item"><span>合計時薪成本</span><span>~$25.68（+35%）</span></div>
+  </div>
+  <div class="cost-box emea">
+    <h4 style="color:var(--accent2)">德國（€19/hr 基礎）</h4>
+    <div class="cost-item"><span>基本時薪</span><span>€19.00</span></div>
+    <div class="cost-item"><span>雇主社保（~25%）</span><span>+€4.75</span></div>
+    <div class="cost-item"><span>帶薪假期折算（30 天）</span><span>+€2.92</span></div>
+    <div class="cost-item"><span>醫療保險</span><span>已含在社保</span></div>
+    <div class="cost-total cost-item"><span>合計時薪成本</span><span>~€26.67 ≈ $29.07（+40–50%）</span></div>
+  </div>
+</div>
+<p style="color:var(--text-muted); font-size:0.88rem; text-align:center; margin-bottom:1rem;">
+  德國雇主每小時多付 ~$3.40（+13%），且解雇限制更嚴格，人力調整摩擦成本更高。
+</p>
+
+<!-- ============ 漲幅 ============ -->
+<h2>二、漲幅趨勢視覺化</h2>
+
+<h3>勞動力成本年漲幅比較</h3>
+<div class="bar-chart">
+  <div class="bar-row">
+    <span class="bar-label">美國物流業</span>
+    <div class="bar-track"><div class="bar-fill us" style="width:79%">+9.5%</div></div>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">美國倉庫（2yr avg）</span>
+    <div class="bar-track"><div class="bar-fill us" style="width:69%">+8.3%</div></div>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">東歐（保加利亞）</span>
+    <div class="bar-track"><div class="bar-fill east" style="width:100%">+12.4%</div></div>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">東歐（立陶宛）</span>
+    <div class="bar-track"><div class="bar-fill east" style="width:78%">+9.7%</div></div>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">EU 整體</span>
+    <div class="bar-track"><div class="bar-fill emea" style="width:30%">+3.7%</div></div>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">歐元區</span>
+    <div class="bar-track"><div class="bar-fill emea" style="width:27%">+3.3%</div></div>
+  </div>
+</div>
+
+<h3>雇主社保費率比較</h3>
+<div class="bar-chart">
+  <div class="bar-row">
+    <span class="bar-label">法國</span>
+    <div class="bar-track"><div class="bar-fill emea" style="width:86%">~43%</div></div>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">義大利</span>
+    <div class="bar-track"><div class="bar-fill emea" style="width:60%">~30%</div></div>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">德國</span>
+    <div class="bar-track"><div class="bar-fill emea" style="width:42%">~21%</div></div>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">荷蘭</span>
+    <div class="bar-track"><div class="bar-fill emea" style="width:36%">~18%</div></div>
+  </div>
+  <div class="bar-row">
+    <span class="bar-label">美國</span>
+    <div class="bar-track"><div class="bar-fill us" style="width:15%">~7.65%</div></div>
+  </div>
+</div>
+
+<!-- ============ 結構性 ============ -->
+<h2>三、為什麼 EMEA 的結構性衝擊更嚴重</h2>
+
+<table>
+  <thead><tr><th>國家</th><th>雇主社保費率</th><th>法定帶薪假</th><th>解雇保護</th></tr></thead>
+  <tbody>
+    <tr><td>法國</td><td>~43%</td><td>25 天 + 11 公假</td><td>極嚴格（works council）</td></tr>
+    <tr><td>德國</td><td>~21%</td><td>20–30 天</td><td>嚴格（Kündigungsschutz）</td></tr>
+    <tr><td>義大利</td><td>~30%</td><td>26 天</td><td>嚴格</td></tr>
+    <tr><td>荷蘭</td><td>~18%</td><td>20 天</td><td>嚴格</td></tr>
+    <tr><td style="color:var(--accent)">美國</td><td style="color:var(--accent)">~7.65%</td><td style="color:var(--accent)">0 天（聯邦法）</td><td style="color:var(--accent)">幾乎沒有（at-will）</td></tr>
+  </tbody>
+</table>
+
+<div class="card-grid">
+  <div class="card">
+    <h4>利潤壓縮到極限</h4>
+    <ul>
+      <li>歐洲物流業 <strong>EBIT 常 &lt;6%</strong></li>
+      <li>薪資漲 8% &rarr; 成本增 ~4ppt &rarr; <strong>吃掉 2/3 利潤</strong></li>
+      <li>2025 H1 物流業破產率 <strong>+12.5%</strong>，全產業最高</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>人口結構不可逆</h4>
+    <ul>
+      <li>歐洲每 5 名工人有 <strong>1 人超過 55 歲</strong></li>
+      <li>德國到 2035 年將<strong>減少 700 萬勞動人口</strong></li>
+      <li>Brexit 後英國倉庫人力缺口持續擴大</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>法規限制轉型速度</h4>
+    <ul>
+      <li>Works council 對自動化導入有<strong>協商權</strong></li>
+      <li>裁員替代需提前通知 + 社會計畫</li>
+      <li>比美國慢 <strong>6–12 個月</strong></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ 公開指標 ============ -->
+<h2>四、可追蹤的公開指標</h2>
+
+<div class="indicator-group">
+  <div class="indicator">
+    <h5>A. 薪資與勞動成本</h5>
+    <p><strong>Eurostat LCI</strong> — EU/歐元區，季度</p>
+    <a href="https://ec.europa.eu/eurostat/statistics-explained/index.php/Labour_cost_index_-_recent_trends" target="_blank">ec.europa.eu/eurostat &rarr;</a>
+    <p style="margin-top:0.4rem"><strong>BLS ECI</strong> — 美國，季度</p>
+    <a href="https://www.bls.gov/news.release/eci.toc.htm" target="_blank">bls.gov/eci &rarr;</a>
+    <p style="margin-top:0.4rem"><strong>BLS OEWS</strong> — 美國各職業，年度</p>
+    <a href="https://www.bls.gov/oes/" target="_blank">bls.gov/oes &rarr;</a>
+    <p style="margin-top:0.4rem"><strong>OECD Taxing Wages</strong> — OECD 國家，年度</p>
+    <a href="https://www.oecd.org/en/publications/2025/04/taxing-wages-2025_20d1a01d.html" target="_blank">oecd.org/taxing-wages &rarr;</a>
+  </div>
+  <div class="indicator b">
+    <h5>B. 勞動力短缺</h5>
+    <p><strong>Eurostat Job Vacancy Rate</strong> — EU，季度</p>
+    <a href="https://ec.europa.eu/eurostat/databrowser/view/jvs_q_nace2/default/table" target="_blank">ec.europa.eu/jvs &rarr;</a>
+    <p style="margin-top:0.4rem"><strong>BLS JOLTS</strong> — 美國，月度</p>
+    <a href="https://www.bls.gov/jlt/" target="_blank">bls.gov/jolts &rarr;</a>
+    <p style="margin-top:0.4rem"><strong>ifo 企業景氣調查</strong> — 德國，季度</p>
+    <a href="https://www.ifo.de/en/survey/ifo-business-survey" target="_blank">ifo.de &rarr;</a>
+    <p style="margin-top:0.4rem"><strong>EURES 勞動力短缺報告</strong> — EU，年度</p>
+    <a href="https://eures.europa.eu/living-and-working/labour-shortages-and-surpluses-europe_en" target="_blank">eures.europa.eu &rarr;</a>
+  </div>
+  <div class="indicator c">
+    <h5>C. 自動化投資回報</h5>
+    <p><strong>IFR World Robotics</strong> — 全球/各國，年度</p>
+    <a href="https://ifr.org/worldrobotics/" target="_blank">ifr.org &rarr;</a>
+    <p style="margin-top:0.4rem"><strong>Interact Analysis</strong> — AMR/AGV，年度</p>
+    <a href="https://interactanalysis.com" target="_blank">interactanalysis.com &rarr;</a>
+    <p style="margin-top:0.4rem"><strong>MHI Annual Industry Report</strong> — 美國，年度</p>
+    <a href="https://www.mhi.org/publications/report" target="_blank">mhi.org &rarr;</a>
+  </div>
+  <div class="indicator d">
+    <h5>D. 宏觀勞動市場</h5>
+    <p><strong>EC 勞動力市場年報</strong> — EU，年度</p>
+    <a href="https://op.europa.eu/webpub/empl/lmwd-annual-review-leaflet-2025/" target="_blank">op.europa.eu &rarr;</a>
+    <p style="margin-top:0.4rem"><strong>Tax Foundation</strong> — 歐洲稅負，年度</p>
+    <a href="https://taxfoundation.org/data/all/eu/tax-burden-on-labor-europe/" target="_blank">taxfoundation.org &rarr;</a>
+    <p style="margin-top:0.4rem"><strong>Boundless</strong> — 美歐成本比較，年度</p>
+    <a href="https://boundlesshq.com/blog/us-vs-europe-employment-costs-salaries-net-pay-compared-2025-study/" target="_blank">boundlesshq.com &rarr;</a>
+  </div>
+</div>
+
+<!-- ============ 銷售策略 ============ -->
+<h2>五、對自主叉車 / AMR 銷售策略的啟示</h2>
+
+<div class="strategy-grid">
+  <div class="strategy-box" style="border-top: 3px solid var(--accent2);">
+    <h4 style="color:var(--accent2)">EMEA 市場</h4>
+    <ul>
+      <li><strong>ROI 訴求更有力</strong>：結構性高成本（社保 + 假期 + 解雇限制）讓自動化長期回報更明確</li>
+      <li><strong>銷售障礙</strong>：works council 協商、合規成本、導入周期更長</li>
+      <li><strong>切入點</strong>：先用「人力不足無法營運」而非「省錢」— 78% 倉庫已招不到人</li>
+      <li><strong>重點國家</strong>：德國（最大市場 + 最嚴重缺工）、法國（附加成本最高）、東歐（漲幅最快）</li>
+    </ul>
+  </div>
+  <div class="strategy-box" style="border-top: 3px solid var(--accent);">
+    <h4 style="color:var(--accent)">美國市場</h4>
+    <ul>
+      <li><strong>ROI 角度不同</strong>：強調「降低 45% 離職率帶來的訓練和品質損失」</li>
+      <li><strong>銷售優勢</strong>：決策更快、無 works council、可快速部署</li>
+      <li><strong>切入點</strong>：Amazon $19–20/hr 地板效應讓中小倉庫成本飆升，自動化是唯一出路</li>
+      <li><strong>風險</strong>：經濟下行時裁員容易，自動化投資可能被延後</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ 來源 ============ -->
+<h2>參考來源</h2>
+<div class="sources">
+  <a href="https://ec.europa.eu/eurostat/statistics-explained/index.php/Labour_cost_index_-_recent_trends" target="_blank">Eurostat — Labour Cost Index</a>
+  <a href="https://ec.europa.eu/eurostat/web/products-euro-indicators/w/3-17122025-bp" target="_blank">Eurostat — 2025 Q3 勞動成本</a>
+  <a href="https://www.bls.gov/news.release/eci.toc.htm" target="_blank">BLS — Employment Cost Index</a>
+  <a href="https://www.mdm.com/news/research/economic-trends/study-u-s-warehouse-costs-jumped-8-3-from-2022-to-2024/" target="_blank">MDM — US Warehouse Costs +8.3%</a>
+  <a href="https://boundlesshq.com/blog/us-vs-europe-employment-costs-salaries-net-pay-compared-2025-study/" target="_blank">Boundless — US vs Europe Costs 2025</a>
+  <a href="https://ginitalent.com/employer-costs-us-vs-europe-a-2025-breakdown/" target="_blank">Gini Talent — Employer Costs 2025</a>
+  <a href="https://www.oecd.org/en/publications/2025/04/taxing-wages-2025_20d1a01d.html" target="_blank">OECD Taxing Wages 2025</a>
+  <a href="https://taxfoundation.org/data/all/eu/tax-burden-on-labor-europe/" target="_blank">Tax Foundation — Labor Tax Burden</a>
+  <a href="https://www.simon-kucher.com/en/insights/pricing-future-competing-profit-europes-new-labor-economy" target="_blank">Simon-Kucher — Europe Labor Economy</a>
+  <a href="https://www.payscale.com/research/US/Job=Forklift_Operator/Hourly_Rate" target="_blank">PayScale — Forklift Operator US</a>
+  <a href="https://www.salaryexpert.com/salary/job/forklift-operator/germany" target="_blank">SalaryExpert — Forklift Operator DE</a>
+  <a href="https://eures.europa.eu/living-and-working/labour-shortages-and-surpluses-europe_en" target="_blank">EURES — Labour Shortages Europe</a>
+  <a href="https://www.goramp.com/blog/warehouse-management-challenges" target="_blank">GoRamp — Warehouse Challenges 2026</a>
+  <a href="https://www.lagerflaeche.de/en/warehouse-blog/shortage-skilled-workers-logistics/" target="_blank">lagerflaeche.de — Skilled Worker Shortage</a>
+</div>
+
+</body>
+</html>
