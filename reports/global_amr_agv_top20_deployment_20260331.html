@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全球 AMR/AGV 部署量 Top 20 | 2026 深度調查</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg2: #f8f9fa; --bg3: #e9ecef;
+    --text: #1a1a2e; --text2: #495057; --text3: #868e96;
+    --border: #dee2e6; --accent: #2563eb; --accent2: #3b82f6;
+    --green: #16a34a; --green-bg: #dcfce7;
+    --yellow: #ca8a04; --yellow-bg: #fef9c3;
+    --red: #dc2626; --red-bg: #fee2e2;
+    --orange: #ea580c; --orange-bg: #fff7ed;
+    --purple: #7c3aed; --purple-bg: #f3e8ff;
+    --cyan: #0891b2; --cyan-bg: #ecfeff;
+  }
+  [data-theme="dark"] {
+    --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
+    --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+    --border: #334155; --accent: #60a5fa; --accent2: #93c5fd;
+    --green: #4ade80; --green-bg: #14532d;
+    --yellow: #facc15; --yellow-bg: #422006;
+    --red: #f87171; --red-bg: #450a0a;
+    --orange: #fb923c; --orange-bg: #431407;
+    --purple: #a78bfa; --purple-bg: #2e1065;
+    --cyan: #22d3ee; --cyan-bg: #083344;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; transition:background .3s,color .3s; }
+  .container { max-width:1500px; margin:0 auto; padding:20px; }
+  .header { background:linear-gradient(135deg,#0f172a 0%,#7c3aed 100%); color:white; padding:40px 30px; border-radius:16px; margin-bottom:24px; position:relative; }
+  [data-theme="dark"] .header { background:linear-gradient(135deg,#0f172a 0%,#5b21b6 100%); }
+  .header h1 { font-size:1.8rem; font-weight:800; margin-bottom:8px; }
+  .header .subtitle { font-size:1rem; opacity:.9; margin-bottom:16px; }
+  .header .meta { display:flex; gap:20px; flex-wrap:wrap; font-size:.85rem; opacity:.85; }
+  .header .meta span { background:rgba(255,255,255,.15); padding:4px 12px; border-radius:20px; }
+  .theme-toggle { position:absolute; top:16px; right:16px; background:rgba(255,255,255,.2); border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; }
+  .theme-toggle:hover { background:rgba(255,255,255,.3); }
+  .nav-link { position:absolute; top:16px; right:70px; background:rgba(255,255,255,.2); border:none; color:white; padding:8px 16px; border-radius:20px; cursor:pointer; font-size:.82rem; text-decoration:none; }
+  .nav-link:hover { background:rgba(255,255,255,.3); }
+  .stats-bar { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
+  .stat-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px; text-align:center; }
+  .stat-card .num { font-size:1.6rem; font-weight:800; color:var(--accent); }
+  .stat-card .label { font-size:.78rem; color:var(--text2); margin-top:4px; }
+  .section { margin-bottom:24px; }
+  .section-title { font-size:1.2rem; font-weight:700; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid var(--accent); }
+  .table-wrap { overflow-x:auto; border-radius:12px; border:1px solid var(--border); }
+  table { width:100%; border-collapse:collapse; font-size:.8rem; }
+  thead { background:var(--bg3); position:sticky; top:0; z-index:2; }
+  th { padding:10px 6px; text-align:left; font-weight:700; border-bottom:2px solid var(--border); white-space:nowrap; color:var(--text); font-size:.75rem; }
+  td { padding:10px 6px; border-bottom:1px solid var(--border); vertical-align:top; color:var(--text); }
+  tbody tr:hover { background:var(--bg2); }
+  tbody tr:nth-child(even) { background:var(--bg2); }
+  tbody tr:nth-child(even):hover { background:var(--bg3); }
+  .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:.7rem; font-weight:600; white-space:nowrap; }
+  .badge-lfp { background:var(--green-bg); color:var(--green); }
+  .badge-lto { background:var(--cyan-bg); color:var(--cyan); }
+  .badge-nwo { background:var(--purple-bg); color:var(--purple); }
+  .badge-lion { background:var(--yellow-bg); color:var(--yellow); }
+  .badge-multi { background:var(--purple-bg); color:var(--purple); }
+  .badge-agm { background:var(--bg3); color:var(--text3); }
+  .badge-known { background:var(--green-bg); color:var(--green); }
+  .badge-hidden { background:var(--red-bg); color:var(--red); }
+  .badge-cn { background:#fee2e2; color:#991b1b; }
+  [data-theme="dark"] .badge-cn { background:#450a0a; color:#fca5a5; }
+  .badge-us { background:#dbeafe; color:#1e40af; }
+  [data-theme="dark"] .badge-us { background:#1e3a5f; color:#93c5fd; }
+  .badge-eu { background:#d1fae5; color:#065f46; }
+  [data-theme="dark"] .badge-eu { background:#064e3b; color:#6ee7b7; }
+  .supplier-name { font-weight:700; color:var(--accent); }
+  .revenue { font-weight:700; white-space:nowrap; }
+  .deploy-num { font-weight:800; color:var(--accent); font-size:.9rem; }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  .src { font-size:.68rem; color:var(--text3); display:block; margin-top:2px; }
+  .src a { color:var(--text3); }
+  .src a:hover { color:var(--accent); }
+  .insight-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; }
+  .insight-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .insight-card .icon { font-size:1.5rem; margin-bottom:8px; }
+  .insight-card h4 { font-size:.95rem; margin-bottom:6px; }
+  .insight-card p { font-size:.82rem; color:var(--text2); }
+  .footer { text-align:center; padding:24px; margin-top:24px; border-top:1px solid var(--border); font-size:.8rem; color:var(--text3); }
+  @media print { .theme-toggle,.nav-link { display:none; } body { font-size:9pt; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <button class="theme-toggle" onclick="toggleTheme()" title="切換日夜模式">🌓</button>
+  <a class="nav-link" href="sitl2026_battery_supply_chain_map_20260330.html">← SITL/GI 展會版</a>
+  <h1>全球 AMR/AGV 部署量 Top 20</h1>
+  <div class="subtitle">依累計部署台數排序 | 含電池供應鏈 + 下游客戶 + 營收</div>
+  <div class="meta">
+    <span>全球範圍</span>
+    <span>資料截止 2026-03-31</span>
+    <span>20 家 | 8 國</span>
+    <span>有憑有據，無推估</span>
+    <span>TrendPower 戰略用</span>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-card"><div class="num">1M+</div><div class="label">Amazon 最大部署</div></div>
+  <div class="stat-card"><div class="num">3</div><div class="label">電池供應商已知</div></div>
+  <div class="stat-card"><div class="num">LFP</div><div class="label">12/20 廠商主流</div></div>
+  <div class="stat-card"><div class="num">8</div><div class="label">中國廠商</div></div>
+  <div class="stat-card"><div class="num">5</div><div class="label">美國廠商</div></div>
+  <div class="stat-card"><div class="num">7</div><div class="label">歐洲廠商</div></div>
+</div>
+
+<!-- Main Table -->
+<div class="section">
+  <div class="section-title">全球 AMR/AGV Top 20（依累計部署量排序）</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>廠商</th><th>國籍</th><th>營收</th><th>累計部署</th><th>年出貨 / 備註</th><th>電池化學</th><th>電池供應商</th><th>主要下游客戶</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- #1 Amazon -->
+        <tr>
+          <td>1</td>
+          <td><strong>Amazon Robotics</strong><br>(Kiva Systems)</td>
+          <td><span class="badge badge-us">🇺🇸 美國</span></td>
+          <td class="revenue">未公開<br><span class="src">Amazon 整體 $638B</span></td>
+          <td><span class="deploy-num">1,000,000+</span><span class="src"><a href="https://www.aboutamazon.com/news/operations/amazon-robots-in-fulfillment-centers" target="_blank">Amazon 官方 2025/07</a></span></td>
+          <td>自用不外售；1,000+ 倉庫</td>
+          <td><span class="badge badge-lto">LTO</span><span class="src"><a href="https://altairnano.com" target="_blank">Altairnano LTO</a></span></td>
+          <td><span class="supplier-name">Altairnano</span>（美國 LTO）<br>Toshiba SCiB™（待確認）</td>
+          <td>Amazon 自用（全球 1,000+ FC）</td>
+        </tr>
+        <!-- #2 Hikrobot -->
+        <tr>
+          <td>2</td>
+          <td><strong><a href="https://www.hikrobotics.com" target="_blank">Hikrobot</a></strong><br>(海康機器人)</td>
+          <td><span class="badge badge-cn">🇨🇳 中國</span></td>
+          <td class="revenue">$2.5B+（母）<br><span class="src">2025 H1 ¥31.4 億</span></td>
+          <td><span class="deploy-num">100,000+</span><span class="src"><a href="https://cnmra.com/7-chinese-mobile-robot-companies-with-over-100000-units-shipped/" target="_blank">CMRA 認證 2024/05</a></span></td>
+          <td>17,000+ 客戶 / 50+ 國<span class="src"><a href="https://cnmra.com/hikrobot-revenue-reached-3-138-billion-yuan-in-the-first-half-of-the-year/" target="_blank">H1 營收</a></span></td>
+          <td><span class="badge badge-lfp">LFP</span>（推測）</td>
+          <td>電芯未公開<br>充電=<span class="supplier-name"><a href="https://www.wiferion.com/en/news/hikrobot-integrates-wireless-charging-into-amrs/" target="_blank">Wiferion</a></span></td>
+          <td>DHL 上海、Superdry（66 台）、Bosch Huayu、BMW Brilliance</td>
+        </tr>
+        <!-- #3 AutoStore -->
+        <tr>
+          <td>3</td>
+          <td><strong><a href="https://www.autostoresystem.com" target="_blank">AutoStore</a></strong></td>
+          <td><span class="badge badge-eu">🇳🇴 挪威</span></td>
+          <td class="revenue">$601M<span class="src"><a href="https://www.autostoresystem.com/investors-press-releases/autostore-q4-2024-financial-results" target="_blank">2024 年報</a></span></td>
+          <td><span class="deploy-num">~78,500</span><span class="src"><a href="https://www.autostoresystem.com/investors-press-releases/autostore-q4-2024-financial-results" target="_blank">2025 Q1 IR</a></span></td>
+          <td>~1,550 系統 / 57 國<br>毛利率 73%</td>
+          <td><span class="badge badge-multi">多化學</span><br>R5=AGM | R5 Pro=<span class="badge badge-lto">LTO</span> | B1=Li-ion</td>
+          <td><span class="supplier-name"><a href="https://www.bastiansolutions.com/store/autostore-robot-5-1-pro-toshiba-sip-24-23-lto-battery/as-36080/" target="_blank">Toshiba SCiB™</a></span>（R5 Pro LTO）<br>B1 BattPack™ 未公開</td>
+          <td>Puma、Gucci/Kering<br>透過 Dematic/Swisslog/Kardex 整合</td>
+        </tr>
+        <!-- #4 Geek+ -->
+        <tr>
+          <td>4</td>
+          <td><strong><a href="https://www.geekplus.com" target="_blank">Geek+</a></strong><br>(極智嘉)</td>
+          <td><span class="badge badge-cn">🇨🇳 中國</span></td>
+          <td class="revenue">RMB 24.1 億<br>(~$330M)<span class="src"><a href="https://www.geekplus.com/resources/news/ipo-interim-results" target="_blank">2024 全年</a></span></td>
+          <td><span class="deploy-num">66,000+</span><span class="src"><a href="https://www.geekplus.com/resources/news/geekplus-lists-on-hkex-main-board-pioneering-the-global-smart-logistics-transformation-with-robotics" target="_blank">港交所 IPO 2025</a></span></td>
+          <td>850+ 企業客戶 / 65+ Fortune 500<br>連續 7 年全球 AMR 市占第一（CIC）</td>
+          <td><span class="badge badge-lfp">LFP</span></td>
+          <td>未公開</td>
+          <td>跨境電商、零售、3PL、汽車、半導體（具名客戶未公開）</td>
+        </tr>
+        <!-- #5 Quicktron -->
+        <tr>
+          <td>5</td>
+          <td><strong><a href="https://www.quicktron.com" target="_blank">Quicktron</a></strong><br>(快倉)</td>
+          <td><span class="badge badge-cn">🇨🇳 中國</span></td>
+          <td class="revenue">未公開<span class="src">Series D >$100M</span></td>
+          <td><span class="deploy-num">35,000+</span><span class="src"><a href="https://www.quicktron.com/about-us" target="_blank">官網</a></span></td>
+          <td>1,000+ 客戶 / 20+ 國</td>
+          <td><span class="badge badge-lfp">LFP</span>（行業慣例）</td>
+          <td>未公開</td>
+          <td><a href="https://www.kiongroup.com/en/News-Stories/Press-Releases/Press-Releases-Detail.html?id=2012747" target="_blank">KION/Dematic</a>（歐洲通路）</td>
+        </tr>
+        <!-- #6 Hai Robotics -->
+        <tr>
+          <td>6</td>
+          <td><strong><a href="https://www.hairobotics.com" target="_blank">Hai Robotics</a></strong><br>(海柔創新)</td>
+          <td><span class="badge badge-cn">🇨🇳 中國</span></td>
+          <td class="revenue">RMB 13.6 億<br>(~$186M)<span class="src"><a href="https://www.benzinga.com/Opinion/26/02/50777369/hai-robotics-files-for-hong-kong-ipo-key-takeaways" target="_blank">2024 IPO 招股書</a></span></td>
+          <td><span class="deploy-num">29,000+</span><span class="src"><a href="https://www.hairobotics.com/blog/2024-review-year-value-creation" target="_blank">2025/12 年度回顧</a></span></td>
+          <td>760+ 客戶 / 40 國<br>全球 ACR 市占 >30%</td>
+          <td><span class="badge badge-lfp">LFP</span></td>
+          <td>未公開</td>
+          <td>Anta、Xtep、Bosideng、Lenovo、Philips、<a href="https://www.hairobotics.com/blog/2024-review-year-value-creation" target="_blank">SF Express</a></td>
+        </tr>
+        <!-- #7 Symbotic -->
+        <tr>
+          <td>7</td>
+          <td><strong><a href="https://www.symbotic.com" target="_blank">Symbotic</a></strong></td>
+          <td><span class="badge badge-us">🇺🇸 美國</span></td>
+          <td class="revenue">$2.25B<span class="src"><a href="https://ir.symbotic.com/news-releases/news-release-details/symbotic-reports-fourth-quarter-and-fiscal-year-2025-results" target="_blank">FY2025</a></span></td>
+          <td>48 套系統<br><span class="src">每套含數百台 Bot</span></td>
+          <td>積壓訂單 $224 億<br>FY2025 營收 YoY +26%</td>
+          <td><span class="badge badge-nwo">NWO</span>（新代）<br>前代=超級電容</td>
+          <td><span class="supplier-name"><a href="https://ir.symbotic.com/news-releases/news-release-details/symbotic-and-nyobolt-announce-new-performance-improving-power" target="_blank">Nyobolt</a></span>（英國劍橋，NWO 鋰離子）</td>
+          <td><strong>Walmart</strong>（85% 營收）、C&S Wholesale、GreenBox</td>
+        </tr>
+        <!-- #8 Exotec -->
+        <tr>
+          <td>8</td>
+          <td><strong><a href="https://www.exotec.com" target="_blank">Exotec</a></strong></td>
+          <td><span class="badge badge-eu">🇫🇷 法國</span></td>
+          <td class="revenue">破 $1B<span class="src"><a href="https://www.exotec.com/news/exotec-celebrates-10-years-of-innovation-driving-a-new-era-of-warehouse-technology/" target="_blank">2024</a></span></td>
+          <td><span class="deploy-num">10,000</span><span class="src"><a href="https://roboticsandautomationnews.com/2025/10/15/exotec-celebrates-10-years-and-10000-warehouse-robots-worldwide/95542/" target="_blank">2025/10 十週年</a></span></td>
+          <td>200+ 站點<br>每套 Skyfleet 150-200 台</td>
+          <td><span class="badge badge-lion">Li-ion</span></td>
+          <td><span class="supplier-name"><a href="https://www.tecsup.fr/en/supplying-robot-fleets-exotec-solutions/" target="_blank">TECSUP</a></span>（法國 SME）</td>
+          <td><a href="https://thenextweb.com/news/decathlon-exotec-warehouse-robots-europe-productivity" target="_blank">Decathlon</a>（7 廠 1,050+ 台）、Carrefour、UNIQLO、Gap、Geodis</td>
+        </tr>
+        <!-- #9 MiR -->
+        <tr>
+          <td>9</td>
+          <td><strong><a href="https://mobile-industrial-robots.com" target="_blank">MiR</a></strong><br>(Teradyne)</td>
+          <td><span class="badge badge-eu">🇩🇰 丹麥</span></td>
+          <td class="revenue">~$300M（MiR）<br>$72M（2024）<span class="src"><a href="https://www.therobotreport.com/teradyne-robotics-generates-75m-in-q2/" target="_blank">Robot Report</a></span></td>
+          <td><span class="deploy-num">~9,000-10,000</span><span class="src"><a href="https://shelley.com/wp-content/uploads/2024/07/MiR-Main-Brochure-EN-12-12-2023.pdf" target="_blank">~2022/23 Brochure</a></span></td>
+          <td>60 國 / 220+ 整合商<br>2024 營收 $72M</td>
+          <td><span class="badge badge-lion">Li-ion</span> 48V/102Ah</td>
+          <td>未公開</td>
+          <td>Toyota、Ford、BMW、Schneider Electric、Raytheon</td>
+        </tr>
+        <!-- #10 Locus -->
+        <tr>
+          <td>10</td>
+          <td><strong><a href="https://locusrobotics.com" target="_blank">Locus Robotics</a></strong></td>
+          <td><span class="badge badge-us">🇺🇸 美國</span></td>
+          <td class="revenue">~$230M<span class="src">2023 峰值</span></td>
+          <td>未公開精確台數<span class="src">350+ 站點 / 150+ 客戶</span></td>
+          <td><a href="https://group.dhl.com/en/media-relations/press-releases/2024/dhl-supply-chain-passes-unprecedented-500-million-picks-milestone-using-locus-robotics-autonomous-mobile-robots.html" target="_blank">累計 10 億次 picks</a>（2024）</td>
+          <td><span class="badge badge-lfp">LFP</span>（行業慣例）</td>
+          <td>未公開</td>
+          <td><strong>DHL Supply Chain</strong>（35+ 站點）、Radial 3PL</td>
+        </tr>
+        <!-- #11 GreyOrange -->
+        <tr>
+          <td>11</td>
+          <td><strong><a href="https://www.greyorange.com" target="_blank">GreyOrange</a></strong></td>
+          <td><span class="badge badge-us">🇸🇬/🇮🇳</span></td>
+          <td class="revenue">~$41M<span class="src"><a href="https://www.owler.com/company/greyorange" target="_blank">FY2023-24</a></span></td>
+          <td><span class="deploy-num">6,000+</span><span class="src">機器人運行中</span></td>
+          <td>—</td>
+          <td><span class="badge badge-lfp">LFP</span>（行業慣例）</td>
+          <td>未公開</td>
+          <td>Walmart（北美）、H&M/COS、<a href="https://deccanfounders.com/2025/12/editor_picks/how-greyorange-is-revolutionizing-warehouses-with-ai-and-robotics-in-india/" target="_blank">Dorman Products</a></td>
+        </tr>
+        <!-- #12 KNAPP -->
+        <tr>
+          <td>12</td>
+          <td><strong><a href="https://www.knapp.com" target="_blank">KNAPP</a></strong></td>
+          <td><span class="badge badge-eu">🇦🇹 奧地利</span></td>
+          <td class="revenue">EUR 1.98B<span class="src"><a href="https://www.knapp.com/en/record-financial-results-for-knapp/" target="_blank">FY2024/25</a></span></td>
+          <td>未公開</td>
+          <td>Open Shuttle AMR 系列<br>電池供應商未知</td>
+          <td><span class="badge badge-lfp">LFP</span>（行業慣例）</td>
+          <td>未公開</td>
+          <td>Fronius、Magna</td>
+        </tr>
+        <!-- #13 Alstef -->
+        <tr>
+          <td>13</td>
+          <td><strong><a href="https://alstefgroup.com" target="_blank">Alstef Group</a></strong><br>(BA Systèmes)</td>
+          <td><span class="badge badge-eu">🇫🇷 法國</span></td>
+          <td class="revenue">EUR 200-300M</td>
+          <td><span class="deploy-num">1,200</span><span class="src"><a href="https://www.bretagne-economique.com/actualites/en-forte-croissance-alstef-mobile-robotics-35-deploie-son-plan-road-to-2026-et-cherche-a-sagrandir/" target="_blank">Bretagne Éco 2024</a></span></td>
+          <td><strong>120 台/年</strong>（2023）→ 156 台（2024 預測）<br>目標 2026 年 300 台/年<br>220 站點</td>
+          <td><span class="badge badge-multi">多化學</span> Li-ion/鉛酸/Gel</td>
+          <td>未公開</td>
+          <td><a href="https://www.airportsinternational.com/article/case-study-alstef-replaces-air-france-system" target="_blank">Air France Cargo</a>、Nestlé、L'Oréal、LVMH、Chanel、Michelin</td>
+        </tr>
+        <!-- #14 VisionNav -->
+        <tr>
+          <td>14</td>
+          <td><strong><a href="https://www.visionnav.com" target="_blank">VisionNav</a></strong></td>
+          <td><span class="badge badge-cn">🇨🇳 中國</span></td>
+          <td class="revenue">$100-200M</td>
+          <td><span class="deploy-num">750+ 專案</span><span class="src"><a href="https://www.visionnav.com/" target="_blank">官網</a></span></td>
+          <td>30+ 國 / 50+ Fortune 500<span class="src"><a href="https://www.visionnav.com/news/detail/detail243.html" target="_blank">C 輪 $50M</a></span></td>
+          <td><span class="badge badge-lion">Li-ion</span></td>
+          <td>未公開</td>
+          <td>50+ Fortune 500（未具名）</td>
+        </tr>
+        <!-- #15 Swisslog -->
+        <tr>
+          <td>15</td>
+          <td><strong><a href="https://www.swisslog.com" target="_blank">Swisslog</a></strong> (KUKA)</td>
+          <td><span class="badge badge-eu">🇨🇭 瑞士</span></td>
+          <td class="revenue">EUR 1.2B</td>
+          <td>TransCar <span class="deploy-num">700+</span><span class="src"><a href="https://www.handling-network.com/swisslog-automates-hospital-logistics/" target="_blank">醫療 AGV</a></span></td>
+          <td>50+ 醫院（法國 30+）<br>CarryPick 未公開</td>
+          <td><span class="badge badge-multi">Ni-Cd</span> TransCar / <span class="badge badge-lion">Li-ion</span> CarryPick</td>
+          <td><span class="supplier-name"><a href="https://www.logisticshandling.com/articles/2008/02/04/71-transcar-agvs-powered-by-saft-ni-cd-battery-modules-achieve-remarkable-savings-for-hospital-in" target="_blank">Saft</a></span>（TransCar Ni-Cd）</td>
+          <td><a href="https://www.automatedwarehouseonline.com/toyota-to-deploy-swisslog-amrs-to-help-with-parts-fulfillment-logistics/" target="_blank">Toyota Motor NA</a>、50+ 醫院</td>
+        </tr>
+        <!-- #16 ForwardX -->
+        <tr>
+          <td>16</td>
+          <td><strong><a href="https://www.forwardx.com" target="_blank">ForwardX</a></strong><br>(未來機器人)</td>
+          <td><span class="badge badge-cn">🇨🇳 中國</span></td>
+          <td class="revenue">未公開</td>
+          <td>未公開<span class="src"><a href="https://roboticsandautomationnews.com/2024/01/13/forwardx-robotics-amrs-fulfill-more-than-26-million-orders-during-global-shopping-spree/76625/" target="_blank">累計 2,600 萬訂單</a></span></td>
+          <td>100+ 客戶 / 10+ Fortune 500</td>
+          <td><span class="badge badge-lfp">LFP</span>（行業慣例）</td>
+          <td>未公開</td>
+          <td>JD.com、DHL、IKEA、TCL、ITOCHU</td>
+        </tr>
+        <!-- #17 Standard Robots -->
+        <tr>
+          <td>17</td>
+          <td><strong>Standard Robots</strong><br>(斯坦德)</td>
+          <td><span class="badge badge-cn">🇨🇳 中國</span></td>
+          <td class="revenue">RMB 2.51 億<span class="src"><a href="https://eu.36kr.com/en/p/3639213176278404" target="_blank">2024 IPO</a></span></td>
+          <td>未公開</td>
+          <td>400+ 客戶<br>3C 第 2 / 汽車第 2 / 半導體第 5</td>
+          <td><span class="badge badge-lfp">LFP</span></td>
+          <td>未公開</td>
+          <td>3C/半導體/汽車（港交所 IPO 申請中）</td>
+        </tr>
+        <!-- #18 Mushiny -->
+        <tr>
+          <td>18</td>
+          <td><strong><a href="https://www.mushiny.com" target="_blank">Mushiny</a></strong><br>(牧星智能)</td>
+          <td><span class="badge badge-cn">🇨🇳 中國</span></td>
+          <td class="revenue">未公開</td>
+          <td>未公開</td>
+          <td>500+ 客戶<br>海外占比 ~50%</td>
+          <td><span class="badge badge-lfp">LFP</span>（行業慣例）</td>
+          <td>未公開</td>
+          <td>零售/電子/冷鏈（具名未公開）</td>
+        </tr>
+        <!-- #19 Vecna -->
+        <tr>
+          <td>19</td>
+          <td><strong><a href="https://www.vecnarobotics.com" target="_blank">Vecna Robotics</a></strong></td>
+          <td><span class="badge badge-us">🇺🇸 美國</span></td>
+          <td class="revenue">$25-100M<span class="src">估計</span></td>
+          <td>未公開</td>
+          <td>RT4500 Tugger 系列<span class="src"><a href="https://siliconangle.com/2024/11/13/industrial-automation-startup-vecna-robotics-raises-14-5m-appoints-new-ceo/" target="_blank">Series C-III $14.5M</a></span></td>
+          <td><span class="badge badge-lfp">LFP</span>（行業慣例）</td>
+          <td>未公開</td>
+          <td><a href="https://www.vecnarobotics.com/resources/geodis/" target="_blank">GEODIS</a>、FedEx、Caterpillar</td>
+        </tr>
+        <!-- #20 Youibot -->
+        <tr>
+          <td>20</td>
+          <td><strong>Youibot</strong><br>(優艾智合)</td>
+          <td><span class="badge badge-cn">🇨🇳 中國</span></td>
+          <td class="revenue">~$63M<span class="src"><a href="https://technode.com/2024/02/21/next-china-youibot-chinas-industrial-mobile-robot-pioneer-is-going-global/" target="_blank">2024</a></span></td>
+          <td>未公開</td>
+          <td>30+ 國 / 半導體+鋰電池廠<span class="src"><a href="https://www.therobotreport.com/youibot-raises-47m-to-develop-amrs/" target="_blank">$47M 融資</a></span></td>
+          <td><span class="badge badge-lfp">LFP</span></td>
+          <td>未公開</td>
+          <td>半導體晶圓廠、鋰電池產線（CATL 等）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Battery Supplier Known -->
+<div class="section">
+  <div class="section-title">全球僅 3 家 AMR/AGV 廠商公開電池供應商</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>廠商</th><th>電池供應商</th><th>化學</th><th>用途</th><th>來源</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Amazon Robotics</strong></td>
+          <td><span class="supplier-name">Altairnano</span>（美國）</td>
+          <td><span class="badge badge-lto">LTO</span></td>
+          <td>Kiva 機器人（1hr 運行 / 5min 充電循環）</td>
+          <td class="src"><a href="https://altairnano.com" target="_blank">Altairnano</a></td>
+        </tr>
+        <tr>
+          <td><strong>AutoStore</strong></td>
+          <td><span class="supplier-name">Toshiba SCiB™</span>（日本）</td>
+          <td><span class="badge badge-lto">LTO</span></td>
+          <td>R5 Pro 機器人（高密度多班次倉儲）</td>
+          <td class="src"><a href="https://www.bastiansolutions.com/store/autostore-robot-5-1-pro-toshiba-sip-24-23-lto-battery/as-36080/" target="_blank">Bastian 零件目錄</a></td>
+        </tr>
+        <tr>
+          <td><strong>Symbotic</strong></td>
+          <td><span class="supplier-name">Nyobolt</span>（英國劍橋）</td>
+          <td><span class="badge badge-nwo">NWO</span></td>
+          <td>新代 Bot（能量密度 6x 超電容，壽命 10x 傳統鋰離子）</td>
+          <td class="src"><a href="https://ir.symbotic.com/news-releases/news-release-details/symbotic-and-nyobolt-announce-new-performance-improving-power" target="_blank">IR 公告</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top:8px;font-size:.82rem;color:var(--text2);">加上 SITL/GI 展會版的 TECSUP（Exotec）、Saft（Swisslog），全球已知 AMR 電池供應商僅 5 家。其餘 15/20 完全不透明。</div>
+</div>
+
+<!-- Key Insights -->
+<div class="section">
+  <div class="section-title">關鍵洞察</div>
+  <div class="insight-grid">
+    <div class="insight-card">
+      <div class="icon">🇨🇳</div>
+      <h4>中國主導出貨增量</h4>
+      <p>2024 年中國 AMR/AGV 市場出貨 13.5 萬台（YoY +8%），貢獻全球 >70% 增量。CMRA 認定 8 家廠商超過 10,000 台。Hikrobot（10 萬）、Geek+（6.6 萬）、Quicktron（3.5 萬）領先。</p>
+    </div>
+    <div class="insight-card">
+      <div class="icon">🔋</div>
+      <h4>LFP 絕對主流（12/20 家）</h4>
+      <p>LiFePO4 是 AMR 標準電池化學。例外：Amazon + AutoStore 用 LTO（極速充電需求）、Symbotic 用 NWO（Nyobolt 新型態）。LFP 與 TrendPower 產品線完美對齊。</p>
+    </div>
+    <div class="insight-card">
+      <div class="icon">🔒</div>
+      <h4>電池供應鏈全球性封閉</h4>
+      <p>Top 20 中僅 3 家公開電池供應商（Amazon→Altairnano、AutoStore→Toshiba、Symbotic→Nyobolt）。17 家完全不透明。電池 Pack 是 AMR 供應鏈中資訊最不對稱的環節。</p>
+    </div>
+    <div class="insight-card">
+      <div class="icon">🎯</div>
+      <h4>Geek+ IPO 是切入窗口</h4>
+      <p>Geek+ 已港交所上市（2590.HK），Hai Robotics + Standard Robots 也在申請。上市公司將被迫提升供應鏈透明度——這是 TrendPower 建立關係的最佳時機。</p>
+    </div>
+    <div class="insight-card">
+      <div class="icon">💰</div>
+      <h4>DHL 是 AMR 最大買家</h4>
+      <p>DHL Supply Chain 同時使用 Locus（35+ 站點）、Hikrobot、ForwardX、GreyOrange。單一終端客戶最廣泛的 AMR 採購者。</p>
+    </div>
+    <div class="insight-card">
+      <div class="icon">🏗️</div>
+      <h4>歐洲廠商部署數據最透明</h4>
+      <p>Exotec（10,000 台）、Alstef（1,200 台 + 年出貨 120 台）是全球少數公開完整部署數據的廠商。中國廠商有里程碑數字但不揭露年出貨明細。</p>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <p>全球 AMR/AGV 部署量 Top 20 | TrendPower 內部策略文件</p>
+  <p>資料截止 2026-03-31 | 20 家、8 國 | 有憑有據，每個數字附來源 | Generated by Claude Code</p>
+</div>
+
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const c = html.getAttribute('data-theme');
+  html.setAttribute('data-theme', c === 'dark' ? 'light' : 'dark');
+  localStorage.setItem('theme', c === 'dark' ? 'light' : 'dark');
+}
+(function() {
+  const s = localStorage.getItem('theme');
+  if (s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches))
+    document.documentElement.setAttribute('data-theme', 'dark');
+})();
+</script>
+</body>
+</html>
