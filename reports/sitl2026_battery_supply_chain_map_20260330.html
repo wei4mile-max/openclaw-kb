@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SITL + Global Industrie 2026 | AMR/AGV 電池供應鏈地圖</title>
+<style>
+  :root {
+    --bg: #ffffff; --bg2: #f8f9fa; --bg3: #e9ecef;
+    --text: #1a1a2e; --text2: #495057; --text3: #868e96;
+    --border: #dee2e6; --accent: #2563eb; --accent2: #3b82f6;
+    --green: #16a34a; --green-bg: #dcfce7;
+    --yellow: #ca8a04; --yellow-bg: #fef9c3;
+    --red: #dc2626; --red-bg: #fee2e2;
+    --orange: #ea580c; --orange-bg: #fff7ed;
+    --purple: #7c3aed; --purple-bg: #f3e8ff;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  [data-theme="dark"] {
+    --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
+    --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+    --border: #334155; --accent: #60a5fa; --accent2: #93c5fd;
+    --green: #4ade80; --green-bg: #14532d;
+    --yellow: #facc15; --yellow-bg: #422006;
+    --red: #f87171; --red-bg: #450a0a;
+    --orange: #fb923c; --orange-bg: #431407;
+    --purple: #a78bfa; --purple-bg: #2e1065;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.6; transition: background 0.3s, color 0.3s;
+  }
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+    color: white; padding: 40px 30px; border-radius: 16px;
+    margin-bottom: 24px; position: relative;
+  }
+  [data-theme="dark"] .header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%);
+  }
+  .header h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
+  .header .subtitle { font-size: 1rem; opacity: 0.9; margin-bottom: 16px; }
+  .header .meta { display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.85rem; opacity: 0.85; }
+  .header .meta span { background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; }
+
+  /* Theme toggle */
+  .theme-toggle {
+    position: absolute; top: 16px; right: 16px;
+    background: rgba(255,255,255,0.2); border: none; color: white;
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+    font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+  }
+  .theme-toggle:hover { background: rgba(255,255,255,0.3); }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; text-align: center;
+  }
+  .stat-card .num { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+  .stat-card .label { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+
+  /* Section */
+  .section { margin-bottom: 24px; }
+  .section-title {
+    font-size: 1.2rem; font-weight: 700; margin-bottom: 12px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--accent);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  thead { background: var(--bg3); position: sticky; top: 0; z-index: 2; }
+  th {
+    padding: 10px 8px; text-align: left; font-weight: 700;
+    border-bottom: 2px solid var(--border); white-space: nowrap; color: var(--text);
+  }
+  td {
+    padding: 10px 8px; border-bottom: 1px solid var(--border);
+    vertical-align: top; color: var(--text);
+  }
+  tbody tr:hover { background: var(--bg2); }
+  tbody tr:nth-child(even) { background: var(--bg2); }
+  tbody tr:nth-child(even):hover { background: var(--bg3); }
+
+  /* Badges */
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 0.72rem; font-weight: 600; white-space: nowrap;
+  }
+  .badge-sitl { background: #dbeafe; color: #1e40af; }
+  [data-theme="dark"] .badge-sitl { background: #1e3a5f; color: #93c5fd; }
+  .badge-gi { background: #fce7f3; color: #9d174d; }
+  [data-theme="dark"] .badge-gi { background: #4a1942; color: #f9a8d4; }
+  .badge-both { background: #d1fae5; color: #065f46; }
+  [data-theme="dark"] .badge-both { background: #064e3b; color: #6ee7b7; }
+  .badge-lfp { background: var(--green-bg); color: var(--green); }
+  .badge-lion { background: var(--yellow-bg); color: var(--yellow); }
+  .badge-nicd { background: var(--orange-bg); color: var(--orange); }
+  .badge-multi { background: var(--purple-bg); color: var(--purple); }
+  .badge-unknown { background: var(--bg3); color: var(--text3); }
+  .badge-known { background: var(--green-bg); color: var(--green); }
+  .badge-partial { background: var(--yellow-bg); color: var(--yellow); }
+  .badge-hidden { background: var(--red-bg); color: var(--red); }
+
+  .supplier-name { font-weight: 700; color: var(--accent); }
+  .customer-list { font-size: 0.78rem; color: var(--text2); }
+  .customer-list strong { color: var(--text); }
+  .revenue { font-weight: 700; white-space: nowrap; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .src { font-size: 0.7rem; color: var(--text3); display: block; margin-top: 3px; }
+  .src a { color: var(--text3); }
+  .src a:hover { color: var(--accent); }
+
+  /* Booth index */
+  .booth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 768px) { .booth-grid { grid-template-columns: 1fr; } }
+  .booth-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+  }
+  .booth-card h3 { font-size: 1rem; margin-bottom: 10px; }
+  .booth-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;
+  }
+  .booth-item:last-child { border-bottom: none; }
+  .booth-code { font-family: 'SF Mono', 'Consolas', monospace; font-weight: 700; color: var(--accent); }
+
+  /* Insight cards */
+  .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .insight-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+  }
+  .insight-card .icon { font-size: 1.5rem; margin-bottom: 8px; }
+  .insight-card h4 { font-size: 0.95rem; margin-bottom: 6px; }
+  .insight-card p { font-size: 0.82rem; color: var(--text2); }
+
+  /* Footer */
+  .footer {
+    text-align: center; padding: 24px; margin-top: 24px;
+    border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text3);
+  }
+
+  /* Print */
+  @media print {
+    .theme-toggle { display: none; }
+    .header { background: #1e3a5f !important; -webkit-print-color-adjust: exact; }
+    body { font-size: 10pt; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+  <button class="theme-toggle" onclick="toggleTheme()" title="切換日夜模式">🌓</button>
+  <h1>SITL + Global Industrie 2026</h1>
+  <div class="subtitle">AMR / AGV 電池供應鏈地圖 — 25 家 OEM 完整掃描</div>
+  <div class="meta">
+    <span>Paris Nord Villepinte</span>
+    <span>2026/3/30 – 4/2</span>
+    <span>25 家 OEM | 10 國</span>
+    <span>TrendPower 進攻策略用</span>
+    <span>資料日期 2026-03-30</span>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat-card"><div class="num">25</div><div class="label">AMR/AGV OEM</div></div>
+  <div class="stat-card"><div class="num">4</div><div class="label">電池供應商已知</div></div>
+  <div class="stat-card"><div class="num">5</div><div class="label">LiFePO4 已確認</div></div>
+  <div class="stat-card"><div class="num">84%</div><div class="label">電池供應不透明</div></div>
+  <div class="stat-card"><div class="num">2</div><div class="label">Wiferion 充電合作</div></div>
+  <div class="stat-card"><div class="num">10</div><div class="label">涵蓋國家</div></div>
+</div>
+
+<!-- Main Table -->
+<div class="section">
+  <div class="section-title">完整供應鏈矩陣（依營收排序）</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>廠商</th>
+          <th>國籍</th>
+          <th>展位</th>
+          <th>營收</th>
+          <th>電池化學</th>
+          <th>電池供應商</th>
+          <th>透明度</th>
+          <th>主要下游客戶</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong><a href="https://robotics.omron.com/" target="_blank">Omron</a></strong></td>
+          <td>🇯🇵</td>
+          <td><span class="badge badge-sitl">SITL</span> 待確認</td>
+          <td class="revenue">$5.5B</td>
+          <td><span class="badge badge-lfp">LiFePO4</span><span class="src"><a href="https://assets.omron.com/m/1bf71ca06f961b4b/original/LD-Series-Mobile-Robot-Datasheet.pdf" target="_blank">LD Datasheet</a></span></td>
+          <td>OEM 未公開（Omron 自有料號）<span class="src"><a href="https://www.nextdayautomation.com/products/new-other-omron-18578-000-spare-battery-for-ld-series-autonomous-mobile-robot-72ah" target="_blank">備品料號 18578-000</a></span></td>
+          <td><span class="badge badge-partial">半透明</span></td>
+          <td class="customer-list"><strong>BMW</strong>、Grupo Antolin、Danfoss、HIPRA、Polar Semi、VOLA<span class="src"><a href="https://robotics.omron.com/omron-robotics-case-studies/" target="_blank">Omron Case Studies</a></span></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><strong><a href="https://www.jungheinrich.com" target="_blank">Jungheinrich</a></strong></td>
+          <td>🇩🇪</td>
+          <td><span class="badge badge-sitl">SITL</span> <span class="booth-code">F030</span><span class="src"><a href="https://www.faq-logistique.com/CP20260305-Jungheinrich-SITL.htm" target="_blank">SITL 報導</a></span></td>
+          <td class="revenue">EUR 5.5B</td>
+          <td><span class="badge badge-lion">Li-ion</span> 推測 LFP</td>
+          <td><span class="supplier-name"><a href="https://www.electrive.com/2019/02/18/germany-jt-energy-systems-founded-for-batteries/" target="_blank">JT Energy Systems</a></span>（自有 JV 70%+Triathlon 30%）<span class="src"><a href="https://www.jungheinrich.com/en/press-events/largest-european-production-centre-for-lithium-ion-batteries-701338" target="_blank">歐洲最大鋰電池廠</a></span></td>
+          <td><span class="badge badge-known">已知</span></td>
+          <td class="customer-list"><strong><a href="https://www.jungheinrich.com/en/press-events/jungheinrich-automates-warehouse-logistics-for-bilstein-group--1965066" target="_blank">bilstein group</a></strong></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><strong><a href="https://www.fenwick-linde.com" target="_blank">Fenwick-Linde</a></strong> (KION)</td>
+          <td>🇫🇷/🇩🇪</td>
+          <td><span class="badge badge-gi">GI</span> <span class="booth-code">5B98</span><span class="src"><a href="https://www.faq-logistique.com/CP20260220-Fenwick-Global-Industrie.htm" target="_blank">GI 報導</a></span></td>
+          <td class="revenue">EUR 4.2B</td>
+          <td><span class="badge badge-lion">Li-ion</span> / 鉛酸可選<span class="src"><a href="https://www.linde-mh.com/en/About-us/Innovations-from-Linde/Lithium-Ionen.html" target="_blank">Linde Li-ION</a></span></td>
+          <td><span class="supplier-name"><a href="https://www.kiongroup.com/en/News-Stories/Stories/Energy/KION-Battery-Systems-starts-production-of-lithium-ion-batteries-for-industrial-trucks.html" target="_blank">KION Battery Systems</a></span>（KION+BMZ 50:50 JV）</td>
+          <td><span class="badge badge-known">已知</span></td>
+          <td class="customer-list">匿名為主（大型汽車/製造業）<span class="src"><a href="https://www.linde-mh.com/en/Solutions/Intralogistics-Automation/Automated-guided-vehicle/" target="_blank">Linde AGV</a></span></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><strong><a href="https://www.kuka.com/en-us/products/amr-autonomous-mobile-robotics" target="_blank">KUKA</a></strong></td>
+          <td>🇩🇪</td>
+          <td><span class="badge badge-gi">GI</span> <span class="booth-code">5B159</span><span class="src"><a href="https://www.global-industrie.com/univers/robotique" target="_blank">GI Robotique</a></span></td>
+          <td class="revenue">EUR 4.0B</td>
+          <td><span class="badge badge-lfp">LiFePO4</span> KMP600P<span class="src"><a href="https://www.kuka.com/en-us/products/amr-autonomous-mobile-robotics/mobile-platforms/kmp-600p-diffdrive" target="_blank">KMP 600P 規格</a></span></td>
+          <td>未公開（母公司=美的集團）</td>
+          <td><span class="badge badge-partial">半透明</span></td>
+          <td class="customer-list"><strong><a href="https://www.kuka.com/en-us/company/press/news/2020/11/intelligent-intralogistics-in-production" target="_blank">BMW</a></strong>（16+台）、VW、GM、Ford、Swisslog</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><strong><a href="https://new.abb.com/products/robotics/autonomous-mobile-robots" target="_blank">ABB Robotics</a></strong></td>
+          <td>🇨🇭</td>
+          <td><span class="badge badge-gi">GI</span> <span class="booth-code">5F135</span><span class="src"><a href="https://www.filiere-3e.fr/2026/03/18/a-global-industrie-2026-abb-robotics-met-lintelligence-artificielle-au-coeur-dune-robotique-plus-autonome-polyvalente/" target="_blank">ABB GI 報導</a></span></td>
+          <td class="revenue">$29B（母）</td>
+          <td><span class="badge badge-lion">Li-ion</span><span class="src"><a href="https://new.abb.com/news/detail/127073/prsrl-abb-introduces-most-compact-ai-powered-amr-for-payloads-up-to-1500-kg" target="_blank">P603 發表</a></span></td>
+          <td>未公開</td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list">美國匿名大型汽車 OEM<span class="src"><a href="https://www.automotivemanufacturingsolutions.com/partner-content/seeing-what-is-invisible-to-others/650818" target="_blank">AMS 報導</a></span></td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><strong><a href="https://www.dematic.com" target="_blank">Dematic</a></strong> (KION)</td>
+          <td>🇩🇪/🇺🇸</td>
+          <td><span class="badge badge-sitl">SITL</span> <span class="booth-code">L004</span><span class="src"><a href="https://www.dematic.com/fr-fr/events/industry-events/2026/SITL-2026/" target="_blank">Dematic SITL</a></span></td>
+          <td class="revenue">EUR 3.5B</td>
+          <td><span class="badge badge-lion">Li-ion</span> Quicktron 代工<span class="src"><a href="https://www.kiongroup.com/en/News-Stories/Press-Releases/Press-Releases-Detail.html?id=2012747" target="_blank">KION+Quicktron</a></span></td>
+          <td>未公開（集團有 <a href="https://eepower.com/news/bmz-holding-and-kion-group-form-lithium-ion-battery-jv-for-industrial-electric-trucks/" target="_blank">KION Battery Systems</a>）</td>
+          <td><span class="badge badge-partial">半透明</span></td>
+          <td class="customer-list"><strong><a href="https://www.dematic.com/en-us/insights/case-studies/radial-groningen-netherlands/" target="_blank">Radial Europe/bpost</a></strong>（299 台）→ Calvin Klein、Gymshark</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><strong><a href="https://mobile-industrial-robots.com" target="_blank">MiR</a></strong> (Teradyne)</td>
+          <td>🇩🇰</td>
+          <td><span class="badge badge-gi">GI</span> <span class="booth-code">5B175</span><span class="src"><a href="https://www.cao.fr/fao-usine-numerique/global-industrie-2026-universal-robots-et-mir-innovent-pour-une-automatisation-toujours-plus-flexible/" target="_blank">MiR+UR GI</a></span></td>
+          <td class="revenue">$2.7B（母）<br>MiR ~$300M</td>
+          <td><span class="badge badge-lion">Li-ion</span> 48V/102Ah<span class="src"><a href="https://www.konicaminolta.com.au/wp-content/uploads/2025/06/MiR1200-Pallet-Jack-Specifications-2.101.pdf" target="_blank">MiR1200 Spec</a></span></td>
+          <td>未公開</td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list"><strong>Toyota</strong>、Ford、BMW、Schneider Electric、Raytheon、Honeywell<span class="src"><a href="https://en.wikipedia.org/wiki/Mobile_industrial_robots" target="_blank">MiR Wiki</a></span></td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><strong><a href="https://www.hikrobotics.com" target="_blank">Hikrobot</a></strong> (海康)</td>
+          <td>🇨🇳</td>
+          <td><span class="badge badge-sitl">SITL</span> <span class="booth-code">K018</span> +Fives<span class="src"><a href="https://www.fivesgroup.com/newspress/detail-view/fives-will-be-exhibiting-with-hik-robot-at-the-sitl-exhibition-for-offering-more-flexibility-to-its-food-retail-3pl-clients-1" target="_blank">Fives 聯展</a></span></td>
+          <td class="revenue">$2.5B+（母）</td>
+          <td><span class="badge badge-lion">Li-ion</span> 推測 LFP</td>
+          <td>電芯未公開；充電=<span class="supplier-name"><a href="https://www.wiferion.com/en/news/hikrobot-integrates-wireless-charging-into-amrs/" target="_blank">Wiferion</a></span><span class="src"><a href="https://logistics-transport.news/en/warehouse-logistics/contactless-charging-in-automobile-manufacturing-hikrobot-eliminates-charging-breaks-for-amr-in-production-283.html" target="_blank">無線充電報導</a></span></td>
+          <td><span class="badge badge-partial">半透明</span></td>
+          <td class="customer-list"><strong>DHL 上海</strong>、<a href="https://warehousenews.co.uk/2023/04/automate-and-grow-with-hikrobot-amr-solutions/" target="_blank">Superdry</a>（66 台）、Bosch Huayu、BMW Brilliance</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><strong><a href="https://www.ssi-schaefer.com" target="_blank">SSI Schaefer</a></strong></td>
+          <td>🇩🇪</td>
+          <td><span class="badge badge-sitl">SITL</span> <span class="booth-code">N038</span><span class="src"><a href="https://www.voxlog.fr/actualite/10727/ssi-schaefer-expose-ses-innovations-intralogistiques-et-robotiques-sur-sitl-2026" target="_blank">Voxlog 報導</a></span></td>
+          <td class="revenue">EUR 2.2B</td>
+          <td><span class="badge badge-lion">Li-ion</span><span class="src"><a href="https://www.ssi-schaefer.com/en-de/products/conveying-transport/fastbots-solution" target="_blank">FastBots</a></span></td>
+          <td>未公開</td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list"><strong><a href="https://www.ssi-schaefer.com/en-us/trends-insights/case-studies/coop-sweden" target="_blank">Coop 瑞典</a></strong>（77,000m² DC）、Coop 瑞士</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><strong><a href="https://www.exotec.com" target="_blank">Exotec</a></strong></td>
+          <td>🇫🇷</td>
+          <td><span class="badge badge-sitl">SITL</span> <span class="booth-code">K064</span><span class="src"><a href="https://www.exotec.com/events/sitl/" target="_blank">Exotec SITL</a></span></td>
+          <td class="revenue">估值 >$2B</td>
+          <td><span class="badge badge-lion">Li-ion</span><span class="src"><a href="https://www.exotec.com/system/automated-warehouse-robots/" target="_blank">Skypod 規格</a></span></td>
+          <td><span class="supplier-name"><a href="https://www.tecsup.fr/en/supplying-robot-fleets-exotec-solutions/" target="_blank">TECSUP</a></span>（法國 SME）</td>
+          <td><span class="badge badge-known">已知</span></td>
+          <td class="customer-list"><strong><a href="https://thenextweb.com/news/decathlon-exotec-warehouse-robots-europe-productivity" target="_blank">Decathlon</a></strong>（7 廠 1,050+ 台）、Carrefour、UNIQLO、Gap、Geodis<span class="src"><a href="https://www.prnewswire.com/news-releases/exotec-celebrates-10-years-of-innovation-driving-a-new-era-of-warehouse-technology-302584380.html" target="_blank">10 週年</a></span></td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><strong><a href="https://www.swisslog.com" target="_blank">Swisslog</a></strong> (KUKA)</td>
+          <td>🇨🇭</td>
+          <td><span class="badge badge-sitl">SITL</span> <span class="booth-code">K056</span><span class="src"><a href="https://www.logistiqueperformante.fr/swisslog-adopte-un-nouveau-format-de-presence-au-sitl-2026/" target="_blank">Swisslog SITL</a></span></td>
+          <td class="revenue">EUR 1.2B</td>
+          <td><span class="badge badge-nicd">Ni-Cd</span> TransCar<br><span class="badge badge-lion">Li-ion</span> CarryPick</td>
+          <td>TransCar=<span class="supplier-name"><a href="https://www.logisticshandling.com/articles/2008/02/04/71-transcar-agvs-powered-by-saft-ni-cd-battery-modules-achieve-remarkable-savings-for-hospital-in" target="_blank">Saft</a></span><br>CarryPick=KUKA 供應鏈<span class="src"><a href="https://www.swisslog.com/en-us/about-swisslog/newsroom/news-press-releases-blog-posts/2023/03/carrypick-release" target="_blank">CarryPick 次世代</a></span></td>
+          <td><span class="badge badge-known">已知</span></td>
+          <td class="customer-list"><strong><a href="https://www.automatedwarehouseonline.com/toyota-to-deploy-swisslog-amrs-to-help-with-parts-fulfillment-logistics/" target="_blank">Toyota Motor NA</a></strong>、50+ 醫院（700+ AGV）</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><strong><a href="https://www.igus.com/product/REBEL-MOVE-PRO-0000-01" target="_blank">igus</a></strong></td>
+          <td>🇩🇪</td>
+          <td><span class="badge badge-gi">GI</span> <span class="booth-code">5G162</span> +倉儲區</td>
+          <td class="revenue">EUR 1.1B（母）</td>
+          <td><span class="badge badge-unknown">未公開</span><span class="src"><a href="https://www.roboticstomorrow.com/news/2026/03/17/new-igus-modular-autonomous-mobile-robot-platform-is-easy-to-configure-and-deploy/26281/" target="_blank">ReBeLMove Pro</a></span></td>
+          <td>未公開</td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list">igus 自有工廠（2025/11 才發佈）<span class="src"><a href="https://press.igus.com/2025/11/26/rebelmove-pro-modular-robot-platform-for-logistics-assembly-and-handling/" target="_blank">發表稿</a></span></td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td><strong><a href="https://www.movu-robotics.com/en-US/ifollow" target="_blank">Movu</a></strong> (Stow)</td>
+          <td>🇧🇪</td>
+          <td><span class="badge badge-sitl">SITL</span> <span class="booth-code">N049</span><span class="src"><a href="https://www.movu-robotics.com/en/events" target="_blank">Movu Events</a></span></td>
+          <td class="revenue">EUR 500M+（母）</td>
+          <td><span class="badge badge-unknown">未公開</span> 智慧插拔式<span class="src"><a href="https://qviro.com/product/movu-robotics/ifollow/specifications" target="_blank">ifollow Specs</a></span></td>
+          <td>未公開</td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list">英國某頭部超市（45 台冷鏈 AMR）<span class="src"><a href="https://www.movu-robotics.com/en-US/success-stories/ifollow" target="_blank">Success Stories</a></span></td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td><strong><a href="https://ep-equipment.com" target="_blank">EP Equipment</a></strong></td>
+          <td>🇨🇳/🇪🇺</td>
+          <td><span class="badge badge-sitl">SITL</span> 待確認<span class="src"><a href="https://businessnewsweek.in/business/sitl-2026-strengthens-european-focus-as-international-exhibitor-presence-accelerates/" target="_blank">SITL 國際報導</a></span></td>
+          <td class="revenue">EUR 500M+</td>
+          <td><span class="badge badge-lfp">LiFePO4</span> LiST 系列<span class="src"><a href="https://ep-equipment.com/li-ion/" target="_blank">EP Li-ion</a></span></td>
+          <td>未公開（推測 CATL/EVE）</td>
+          <td><span class="badge badge-partial">半透明</span></td>
+          <td class="customer-list"><a href="https://www.tvh.com/parts/our-brands-partnerships/ep-equipment" target="_blank">TVH</a> 經銷，終端未具名</td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td><strong><a href="https://www.agilox.net/en/company/" target="_blank">AGILOX</a></strong></td>
+          <td>🇦🇹</td>
+          <td><span class="badge badge-gi">GI</span> 智慧倉儲區<span class="src"><a href="https://www.global-industrie.com/en/exhibitor/RXhoaWJpdG9yXzIwNTg0MjY=" target="_blank">GI 展商頁</a></span></td>
+          <td class="revenue">EUR 61.7M<span class="src"><a href="https://www.agvnetwork.com/news/agilox-2024-results-revenue-rises-profits-under-pressure" target="_blank">2024 財報</a></span></td>
+          <td><span class="badge badge-lfp">LiFePO4</span><span class="src"><a href="https://www.ekapija.com/en/news/3683992/agilox-intelligent-guided-vehicle-igv-for-a-new-production-and-warehouse-experience" target="_blank">LFP 確認</a></span></td>
+          <td>未公開</td>
+          <td><span class="badge badge-partial">半透明</span></td>
+          <td class="customer-list"><strong>MAHLE</strong>、Spitz、<a href="https://blog.agilox.net/en/blg_what-our-customers-say-about-us-and-our-amrs-23" target="_blank">Geberit</a></td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td><strong><a href="https://alstefgroup.com/intralogistics-solutions/our-products/agv-amr/agv-amr-range/" target="_blank">Alstef Group</a></strong></td>
+          <td>🇫🇷</td>
+          <td><span class="badge badge-sitl">SITL</span> <span class="booth-code">K004</span><span class="src"><a href="https://alstefgroup.com/meet-us-at-the-sitl/" target="_blank">Alstef SITL</a></span></td>
+          <td class="revenue">EUR 200-300M</td>
+          <td><span class="badge badge-multi">多化學</span> Li-ion/鉛酸/Gel<span class="src"><a href="https://alstefgroup.com/intralogistics-solutions/our-products/agv-amr/" target="_blank">AGV 頁面</a></span></td>
+          <td>未公開</td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list"><strong><a href="https://www.airportsinternational.com/article/case-study-alstef-replaces-air-france-system" target="_blank">Air France Cargo</a></strong>、貝爾格勒機場、Nestlé、L'Oréal、Kraft、Heineken<span class="src"><a href="https://www.mobile-robots.com/manufacturer/alstef-group-ba-systemes/" target="_blank">300+ 歐洲站點</a></span></td>
+        </tr>
+        <tr>
+          <td>17</td>
+          <td><strong><a href="https://www.visionnav.com/about/" target="_blank">VisionNav</a></strong></td>
+          <td>🇨🇳</td>
+          <td><span class="badge badge-gi">GI</span> 智慧倉儲區</td>
+          <td class="revenue">$100-200M</td>
+          <td><span class="badge badge-lion">Li-ion</span> 化學未公開<span class="src"><a href="https://www.visionnav.com/news/detail/detail299.html" target="_blank">電池安全</a></span></td>
+          <td>未公開</td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list">50+ Fortune 500（未具名）<span class="src"><a href="https://www.visionnav.com/application/detail150.html" target="_blank">製藥案例</a> | <a href="https://www.visionnav.com/application/detail156.html" target="_blank">光伏案例</a></span></td>
+        </tr>
+        <tr>
+          <td>18</td>
+          <td><strong><a href="https://www.pudurobotics.com/en/products/pudut300" target="_blank">Pudu Robotics</a></strong></td>
+          <td>🇨🇳</td>
+          <td><span class="badge badge-gi">GI</span> <span class="booth-code">5E144</span></td>
+          <td class="revenue">$100M+</td>
+          <td><span class="badge badge-lfp">LiFePO4</span> 官方確認<span class="src"><a href="https://www.pudurobotics.com/en/products/pudut300" target="_blank">T300 LFP</a> | <a href="https://log-robot.com/en/amr-products/pudu-robotics/pudu-t300" target="_blank">T300 規格</a></span></td>
+          <td>未公開</td>
+          <td><span class="badge badge-partial">半透明</span></td>
+          <td class="customer-list">3C/汽車/半導體製造（客戶未具名）<span class="src"><a href="https://www.automatedwarehouseonline.com/pudu-robotics-launches-pudu-t300-to-expand-into-industrial-applications/" target="_blank">T300 發表</a></span></td>
+        </tr>
+        <tr>
+          <td>19</td>
+          <td><strong><a href="https://www.scallog.com" target="_blank">Scallog</a></strong></td>
+          <td>🇫🇷</td>
+          <td><span class="badge badge-sitl">SITL</span> <span class="booth-code">K086</span><span class="src"><a href="https://www.scallog.com/en/evenements/" target="_blank">Scallog Events</a></span></td>
+          <td class="revenue">EUR 20-50M</td>
+          <td><span class="badge badge-lion">Li-ion</span><span class="src"><a href="https://www.directindustry.com/prod/scallog/product-194348-2751379.html" target="_blank">Boby 規格</a></span></td>
+          <td>未公開</td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list"><strong><a href="https://ressources.scallog.com/en/les-laboratoires-boiron-%C3%A0-lheure-de-la-diversification-0" target="_blank">Boiron</a></strong>（30 台）、Leroy Merlin、KNCO、Sebbin<span class="src"><a href="https://www.scallog.com/fr/cas-clients/" target="_blank">Scallog 客戶</a></span></td>
+        </tr>
+        <tr>
+          <td>20</td>
+          <td><strong><a href="https://www.sherpa-mr.com/en" target="_blank">Sherpa MR</a></strong></td>
+          <td>🇫🇷</td>
+          <td><span class="badge badge-sitl">SITL</span> <span class="booth-code">E160</span><span class="src"><a href="https://www.sitl.eu/fr-fr/exposer/liste-des-exposants/profil-exposant.sherpa%20mobile%20robotics.org-a0fa72d5-7f51-451d-976d-cfc1a38b856b.html" target="_blank">SITL 展商頁</a></span></td>
+          <td class="revenue">EUR 5-15M</td>
+          <td><span class="badge badge-lion">Li-ion</span> 偏 LFP</td>
+          <td>電芯未公開；充電=<span class="supplier-name"><a href="https://www.wiferion.com/en/news/sherpa-mobile-robotics-collaborates-with-wiferion/" target="_blank">Wiferion</a></span><span class="src"><a href="https://www.automation.com/en-us/articles/august-2020/sherpa-mobile-robotics-collaborates-with-wiferion" target="_blank">合作報導</a></span></td>
+          <td><span class="badge badge-partial">半透明</span></td>
+          <td class="customer-list"><strong><a href="https://www.insidelogistics.ca/features/case-study-mobile-robots-on-the-production-line/" target="_blank">FPT Industrial/Fiat</a></strong>（6 台）、Gaggenau Industrie</td>
+        </tr>
+        <tr>
+          <td>21</td>
+          <td><strong><a href="https://www.forx.rent/?lang=en" target="_blank">Forx</a></strong> (Easymov)</td>
+          <td>🇫🇷</td>
+          <td><span class="badge badge-both">兩展</span> <span class="booth-code">K024</span> + GI Hall 5<span class="src"><a href="https://www.industrie-mag.com/article40141.html" target="_blank">Forx 報導</a></span></td>
+          <td class="revenue">新創</td>
+          <td><span class="badge badge-lion">Li-ion</span></td>
+          <td>未公開<span class="src"><a href="https://www.usinenouvelle.com/article/un-amr-made-in-seine-et-marne.N2212199" target="_blank">Meaux 組裝</a></span></td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list">Tecma Aries（測試中），~10 家早期客戶<span class="src"><a href="https://www.strategieslogistique.com/Forx-nouvel-AMR-gerbeur-a-1400EUR,14056" target="_blank">Forx AMR</a></span></td>
+        </tr>
+        <tr>
+          <td>22</td>
+          <td><strong><a href="https://www.gessmann.com/robotic/" target="_blank">GESSMANN</a></strong></td>
+          <td>🇩🇪</td>
+          <td><span class="badge badge-gi">GI</span> <span class="booth-code">5F152</span><span class="src"><a href="https://www.industrie-mag.com/article40169.html" target="_blank">GESSbot 報導</a></span></td>
+          <td class="revenue">小型</td>
+          <td><span class="badge badge-lion">Li-ion</span></td>
+          <td>未公開<span class="src"><a href="https://www.innok-robotics.de/en/news/2025_innok-robotics-x-gessmann" target="_blank">Innok 底盤合作</a></span></td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list"><strong><a href="https://www.gessmann.com/news/gessbot-autonomous-mobile-robots-amr-for-efficient-automation-in-production-logistics/" target="_blank">Volkswagen</a></strong>（透明工廠）、BASF、Apetito</td>
+        </tr>
+        <tr>
+          <td>23</td>
+          <td><strong><a href="https://strategieslogistique.com/Rob-Occ-lance-une-version-picker,15665" target="_blank">Rob'Occ</a></strong></td>
+          <td>🇫🇷</td>
+          <td><span class="badge badge-both">兩展</span> SITL + <span class="booth-code">5H172</span></td>
+          <td class="revenue">新創 €3M A輪<span class="src"><a href="https://jdlgroupe.com/en/2025/11/04/robocc-devoile-roc-e-picker-lassistant-robotique-mobile-qui-automatise-le-transport-interne/" target="_blank">A 輪報導</a></span></td>
+          <td><span class="badge badge-lion">Li-ion</span><span class="src"><a href="https://emag.directindustry.com/2024/04/12/robocc-revolutionizes-logistics-with-made-in-france-amr/" target="_blank">ROC-E 規格</a></span></td>
+          <td>未公開</td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list">未公開（2023 成立，Airbus Développement 投資）</td>
+        </tr>
+        <tr>
+          <td>24</td>
+          <td><strong><a href="https://global.agilex.ai/" target="_blank">Agilex</a></strong></td>
+          <td>🇫🇷</td>
+          <td><span class="badge badge-gi">GI</span> 智慧倉儲區</td>
+          <td class="revenue">小型</td>
+          <td><span class="badge badge-lion">Li-ion</span> 48V</td>
+          <td>未公開</td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list">Alibaba、Huawei、Honda（底盤平台）<span class="src"><a href="https://www.roboticstomorrow.com/company_directory/agilex-robotics/12629" target="_blank">AgileX Profile</a></span></td>
+        </tr>
+        <tr>
+          <td>25</td>
+          <td><strong><a href="https://www.pramac.com/product-category?folder=5" target="_blank">PRAMAC</a></strong></td>
+          <td>🇮🇹</td>
+          <td><span class="badge badge-gi">GI</span> <span class="booth-code">5E130</span><span class="src"><a href="https://www.global-industrie.com/en/exhibitor/RXhoaWJpdG9yXzIzMzM3OTE=" target="_blank">GI 展商頁</a></span></td>
+          <td class="revenue">中型（母=Generac）</td>
+          <td><span class="badge badge-multi">多化學</span> 鉛酸/Gel/Li-ion</td>
+          <td>未公開；導航=<a href="https://corporate.pramac.com/future-proof-logistics-pramac-partners-with-bluebotics-to-launch-line-of-ant-driven-mobile-robots/" target="_blank">BlueBotics</a><span class="src"><a href="https://www.mmh.com/article/pramac_partners_with_bluebotics_to_launch_line_of_ant_driven_mobile_robots" target="_blank">合作報導</a></span></td>
+          <td><span class="badge badge-hidden">不透明</span></td>
+          <td class="customer-list">未公開（AMR 剛起步）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Booth Index -->
+<div class="section">
+  <div class="section-title">展場攤位索引</div>
+  <div class="booth-grid">
+    <div class="booth-card">
+      <h3><span class="badge badge-sitl">SITL 2026</span> Hall 7</h3>
+      <div class="booth-item"><span>Sherpa Mobile Robotics</span><span class="booth-code">E160</span></div>
+      <div class="booth-item"><span>Jungheinrich</span><span class="booth-code">F030</span></div>
+      <div class="booth-item"><span>Alstef Group</span><span class="booth-code">K004</span></div>
+      <div class="booth-item"><span>Hikrobot (+Fives)</span><span class="booth-code">K018</span></div>
+      <div class="booth-item"><span>Forx (Easymov)</span><span class="booth-code">K024</span></div>
+      <div class="booth-item"><span>Swisslog</span><span class="booth-code">K056</span></div>
+      <div class="booth-item"><span>Exotec</span><span class="booth-code">K064</span></div>
+      <div class="booth-item"><span>Scallog</span><span class="booth-code">K086</span></div>
+      <div class="booth-item"><span>Dematic</span><span class="booth-code">L004</span></div>
+      <div class="booth-item"><span>SSI Schaefer</span><span class="booth-code">N038</span></div>
+      <div class="booth-item"><span>Movu Robotics</span><span class="booth-code">N049</span></div>
+      <div class="booth-item"><span>Omron</span><span style="color:var(--text3)">待確認</span></div>
+      <div class="booth-item"><span>EP Equipment</span><span style="color:var(--text3)">待確認</span></div>
+      <div class="booth-item"><span>Rob'Occ</span><span style="color:var(--text3)">待確認</span></div>
+    </div>
+    <div class="booth-card">
+      <h3><span class="badge badge-gi">Global Industrie 2026</span> 多館</h3>
+      <div class="booth-item"><span>Fenwick-Linde</span><span class="booth-code">5B98</span></div>
+      <div class="booth-item"><span>KUKA</span><span class="booth-code">5B159</span></div>
+      <div class="booth-item"><span>MiR</span><span class="booth-code">5B175</span></div>
+      <div class="booth-item"><span>PRAMAC</span><span class="booth-code">5E130</span></div>
+      <div class="booth-item"><span>Pudu Robotics</span><span class="booth-code">5E144</span></div>
+      <div class="booth-item"><span>ABB Robotics</span><span class="booth-code">5F135</span></div>
+      <div class="booth-item"><span>GESSMANN</span><span class="booth-code">5F152</span></div>
+      <div class="booth-item"><span>igus</span><span class="booth-code">5G162</span></div>
+      <div class="booth-item"><span>Rob'Occ</span><span class="booth-code">5H172</span></div>
+      <div class="booth-item"><span>AGILOX</span><span style="color:var(--text3)">智慧倉儲區</span></div>
+      <div class="booth-item"><span>VisionNav</span><span style="color:var(--text3)">智慧倉儲區</span></div>
+      <div class="booth-item"><span>Agilex</span><span style="color:var(--text3)">智慧倉儲區</span></div>
+      <div class="booth-item"><span>Forx (兩展)</span><span style="color:var(--text3)">Hall 5</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Key Insights -->
+<div class="section">
+  <div class="section-title">關鍵洞察</div>
+  <div class="insight-grid">
+    <div class="insight-card">
+      <div class="icon">🔒</div>
+      <h4>84% 電池供應商不透明</h4>
+      <p>25 家中僅 4 家可追溯具名電池供應商（Exotec→TECSUP、Swisslog→Saft、Jungheinrich→JT Energy、Linde→KION Battery）。這代表 TrendPower 有巨大的市場切入空間。</p>
+    </div>
+    <div class="insight-card">
+      <div class="icon">🔋</div>
+      <h4>LiFePO4 是 AMR 主流</h4>
+      <p>已確認 LFP 的有 Omron、KUKA、AGILOX、Pudu、EP Equipment 共 5 家，加上多家「推測 LFP」。這與 TrendPower 的 LiFePO4 產品線完美對齊。</p>
+    </div>
+    <div class="insight-card">
+      <div class="icon">🎯</div>
+      <h4>TECSUP 是唯一獨立第三方</h4>
+      <p>Exotec 的電池由法國 SME TECSUP 供應——這是最接近 TrendPower 定位的參照對象/潛在競爭者。其他已知供應商皆為集團自有 JV。</p>
+    </div>
+    <div class="insight-card">
+      <div class="icon">⚡</div>
+      <h4>Wiferion 是充電生態隱形贏家</h4>
+      <p>已串接 Hikrobot + Sherpa MR 兩家 OEM 的無線充電。Wiferion（PULS 集團）同時銷售 etaSTORE 電池模組，既是潛在合作夥伴也是競爭者。</p>
+    </div>
+    <div class="insight-card">
+      <div class="icon">🚗</div>
+      <h4>汽車業是最大客戶群</h4>
+      <p>BMW、VW、Toyota、Ford、Fiat 反覆出現在多家 OEM 的客戶名單中。汽車製造業的 AMR 採購量最大、標準化程度最高。</p>
+    </div>
+    <div class="insight-card">
+      <div class="icon">🏭</div>
+      <h4>中小型法國廠商是甜蜜點</h4>
+      <p>Scallog、Sherpa、Forx、Rob'Occ 等法國中小型 AMR 廠商，電池供應完全不透明、無集團自有 JV、地理距離近——最適合 TrendPower 第一波進攻。</p>
+    </div>
+  </div>
+</div>
+
+<!-- Supply Chain Transparency Summary -->
+<div class="section">
+  <div class="section-title">電池供應商透明度分級</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>透明度</th>
+          <th>廠商</th>
+          <th>數量</th>
+          <th>TrendPower 意義</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-known">已知（自有 JV）</span></td>
+          <td>Jungheinrich (JT Energy)、Fenwick-Linde (KION Battery)</td>
+          <td>2</td>
+          <td>較難切入，但 JT Energy 也對外賣（Linde、CLARK），代表集團 JV 不等於封閉</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-known">已知（第三方）</span></td>
+          <td>Exotec (TECSUP)、Swisslog TransCar (Saft)</td>
+          <td>2</td>
+          <td>TECSUP 為法國 SME — TrendPower 的直接對標；Saft 是 Ni-Cd 舊系統，可提議升級 LFP</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-partial">半透明</span></td>
+          <td>Omron、KUKA、Dematic、Hikrobot、EP Equipment、AGILOX、Pudu、Sherpa</td>
+          <td>8</td>
+          <td>化學已知但供應商未公開 — 有機會以 LFP 專業切入對話</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-hidden">完全不透明</span></td>
+          <td>ABB、MiR、SSI Schaefer、igus、Movu、Alstef、VisionNav、Scallog、Forx、GESSMANN、Rob'Occ、Agilex、PRAMAC</td>
+          <td>13</td>
+          <td>最大機會池 — 電池供應關係不明，TrendPower 可主動提案</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>SITL + Global Industrie 2026 | AMR/AGV 電池供應鏈地圖 | TrendPower 內部策略文件</p>
+  <p>資料截止 2026-03-30 | 25 家 OEM、10 國、2 展會 | Generated by Claude Code</p>
+</div>
+
+</div>
+
+<script>
+function toggleTheme() {
+  const body = document.documentElement;
+  const current = body.getAttribute('data-theme');
+  body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+  localStorage.setItem('theme', current === 'dark' ? 'light' : 'dark');
+}
+// Init theme
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
+</script>
+</body>
+</html>
